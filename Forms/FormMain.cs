@@ -16,7 +16,6 @@ using Microsoft.VisualBasic.CompilerServices;
 namespace GenieClient
 {
     // Imports Microsoft.Win32
-
     public partial class FormMain
     {
         public FormMain()
@@ -5073,7 +5072,13 @@ namespace GenieClient
                 string argsPassword = My.MyProject.Forms.DialogConnect.Password;
                 string argsCharacter = My.MyProject.Forms.DialogConnect.Character;
                 string argsGame = My.MyProject.Forms.DialogConnect.Game;
-                ConnectToGame(argsAccountName, argsPassword, argsCharacter, argsGame);
+                string argsHost = My.MyProject.Forms.DialogConnect.Host;
+                string argsPort = My.MyProject.Forms.DialogConnect.PortNumber;
+                bool handshakeEnabled = My.MyProject.Forms.DialogConnect.HandshakeEnabled;
+                bool xmlEnabled = My.MyProject.Forms.DialogConnect.XMLEnabled;
+
+
+                ConnectToGame(argsAccountName, argsPassword, argsCharacter, argsGame, false, argsHost, int.Parse(argsPort));
                 SavePasswordToolStripMenuItem.Checked = My.MyProject.Forms.DialogConnect.CheckBoxSavePassword.Checked;
             }
         }
@@ -5133,7 +5138,7 @@ namespace GenieClient
                     string argsPassword = m_oGame.AccountPassword;
                     string argsCharacter = m_oGame.AccountCharacter;
                     string argsGame = m_oGame.AccountGame;
-                    m_oGame.Connect(m_sGenieKey, argsAccountName, argsPassword, argsCharacter, argsGame);
+                    m_oGame.Connect(m_sGenieKey, argsAccountName, argsPassword, argsCharacter, argsGame, "", 4);
                 }
             }
             /* TODO ERROR: Skipped IfDirectiveTrivia */
@@ -5144,14 +5149,14 @@ namespace GenieClient
             }
         }
 
-        private void ConnectToGame(string sAccountName, string sPassword, string sCharacter, string sGame, bool isLich = false)
+        private void ConnectToGame(string sAccountName, string sPassword, string sCharacter, string sGame, bool isLich = false, string sHost = "eaccess.play.net", int sPort = 7900)
         {
             m_oGame.IsLich = isLich;
             try
             {
                 if (sPassword.Length > 0)
                 {
-                    m_oGame.Connect(m_sGenieKey, sAccountName, sPassword, sCharacter, sGame);
+                    m_oGame.Connect(m_sGenieKey, sAccountName, sPassword, sCharacter, sGame, sHost, sPort);
                 }
                 else
                 {
@@ -6135,6 +6140,8 @@ namespace GenieClient
         private const int ResponseTimeoutUser = 60;
         private bool m_bCheckServerResponse = false;
         private bool m_bCheckUserResponse = false;
+        private string DefaultHost = "eaccess.play.net";
+        private string DefaultPort = "9000";
 
         private void CheckServerIdleTime()
         {
@@ -6877,6 +6884,14 @@ namespace GenieClient
                 }
 
                 string sCharacter = m_oProfile.GetValue("Genie/Profile", "Character", string.Empty);
+                
+                string sHost = m_oProfile.GetValue("Genie/Profile", "Host", DefaultHost);
+                int sPort = int.Parse(m_oProfile.GetValue("Genie/Profile", "Port", DefaultPort));
+                bool sHandshake = m_oProfile.GetValue("Genie/Profile", "Handshake", true);
+
+                bool XMLEnabled = m_oProfile.GetValue("Genie/Profile", "XML", true);
+                bool handshakeEnabled = m_oProfile.GetValue("Genie/Profile", "Handshake", true);
+
                 string sGame = m_oProfile.GetValue("Genie/Profile", "Game", string.Empty);
                 if (sCharacter.Length > 0)
                     m_oGame.AccountCharacter = sCharacter;
@@ -6903,7 +6918,7 @@ namespace GenieClient
                 {
                     if (sAccount.Length > 0 & sPassword.Length > 0)
                     {
-                        ConnectToGame(sAccount, sPassword, sCharacter, sGame, m_oGame.IsLich);
+                        ConnectToGame(sAccount, sPassword, sCharacter, sGame, m_oGame.IsLich, sHost, sPort);
                     }
                     else
                     {
@@ -6911,6 +6926,7 @@ namespace GenieClient
                         My.MyProject.Forms.DialogConnect.Password = "";
                         My.MyProject.Forms.DialogConnect.Character = sCharacter;
                         My.MyProject.Forms.DialogConnect.Game = sGame;
+
                         if (My.MyProject.Forms.DialogConnect.ShowDialog(this) == DialogResult.OK)
                         {
                             string argsAccountName = My.MyProject.Forms.DialogConnect.AccountName;
@@ -6932,8 +6948,6 @@ namespace GenieClient
                 Genie.Game.WindowTarget argoTargetWindow1 = Genie.Game.WindowTarget.Main;
                 AddText(argsText1, oTargetWindow: argoTargetWindow1);
             }
-            // End If
-
         }
 
         private void LoadProfileSettings(bool echo = true)
@@ -7069,7 +7083,7 @@ namespace GenieClient
             }
         }
 
-        private bool SaveProfile(string FileName = null)
+        private bool SaveProfile (string FileName = null)
         {
             if (m_oProfile.GetValue("Genie/Profile", "Account", string.Empty).Length == 0)
             {
@@ -7081,6 +7095,10 @@ namespace GenieClient
             {
                 string argsPassword = "G3" + m_oGame.AccountName.ToUpper();
                 string argsText = m_oGame.AccountPassword;
+                string host = m_oGame.HostName;
+
+                m_oProfile.SetValue("Genie/Profile", "Host", host);
+               // m_oProfile.SetValue("Genie/Profile", "XMLEnabled", true);
                 m_oProfile.SetValue("Genie/Profile", "Password", Utility.EncryptString(argsPassword, argsText));
             }
             else

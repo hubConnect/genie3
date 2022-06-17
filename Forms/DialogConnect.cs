@@ -63,6 +63,54 @@ namespace GenieClient
             }
         }
 
+        public string Host
+        {
+            get
+            {
+                return HostName.Text;
+            }
+            set
+            {
+                HostName.Text = value;
+            }
+        }
+
+        public string PortNumber
+        {
+            get
+            {
+                return Port.Text;
+            }
+            set
+            {
+                Port.Text = value;
+            }
+        }
+
+        public Boolean XMLEnabled
+        {
+            get
+            {
+                return XMLEnabledCheckbox.Checked;
+            }
+            set
+            {
+                XMLEnabledCheckbox.Checked = value;
+            }
+        }
+
+        public Boolean HandshakeEnabled
+        {
+            get
+            {
+                return HandshakeEnabledCheckbox.Checked;
+            }
+            set
+            {
+                HandshakeEnabledCheckbox.Checked = value;
+            }
+        }
+
         private void OK_Button_Click(object sender, EventArgs e)
         {
             if (TextBoxAccount.Text.Trim().Length == 0)
@@ -130,6 +178,11 @@ namespace GenieClient
             {
                 Interaction.MsgBox("Using this option will save your password so that anyone with access to your computer and/or files may connect to your character.", MsgBoxStyle.Exclamation, "CAUTION!");
             }
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

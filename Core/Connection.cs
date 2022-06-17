@@ -174,7 +174,6 @@ namespace GenieClient.Genie
                 Socket s = (Socket)ar.AsyncState;
 
                 // Complete the connection
-                s.EndConnect(ar);
                 PrintText(Utility.GetTimeStamp() + " Connected to " + m_sHostname + ".");
                 Recieve(s);
                 EventConnected?.Invoke();
@@ -310,7 +309,7 @@ namespace GenieClient.Genie
                     else
                     {
                         // Disconnect
-                        Disconnect(s);
+                        //Disconnect(s);
                         EventConnectionLost?.Invoke();
                     }
                 }

@@ -19,7 +19,7 @@ namespace GenieClient.Genie
 
         public event EventConnectEventHandler EventConnect;
 
-        public delegate void EventConnectEventHandler(string sAccountName, string sPassword, string sCharacter, string sGame, bool isLich);
+        public delegate void EventConnectEventHandler(string sAccountName, string sPassword, string sCharacter, string sGame, bool isLich, string sHost, int sPort);
 
         public event EventDisconnectEventHandler EventDisconnect;
 
@@ -2459,13 +2459,13 @@ namespace GenieClient.Genie
                 var arg3 = oGlobals.ParseGlobalVars(args[3].ToString());
                 var arg4 = oGlobals.ParseGlobalVars(args[4].ToString());
 
-                EventConnect?.Invoke(arg1, arg2, arg3, arg4, isLich);
+                EventConnect?.Invoke(arg1, arg2, arg3, arg4, isLich, "", 7900);
             }
             else if (args.Count == 2)
             {
                 var arg1 = oGlobals.ParseGlobalVars(args[1].ToString());
                 var argEmpty = "";
-                EventConnect?.Invoke(arg1, argEmpty, argEmpty, argEmpty,isLich);
+                EventConnect?.Invoke(arg1, argEmpty, argEmpty, argEmpty,isLich, "", 9000);
             }
             else
             {

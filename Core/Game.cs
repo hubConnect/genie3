@@ -200,6 +200,7 @@ namespace GenieClient.Genie
         private object m_oThreadLock = new object(); // Thread safety
         private bool m_bFamiliarLineParse = false;
         public bool IsLich = false;
+        public string host = string.Empty;
 
         /* TODO ERROR: Skipped RegionDirectiveTrivia */
         public enum WindowTarget
@@ -346,6 +347,17 @@ namespace GenieClient.Genie
             }
         }
 
+        public string HostName
+        {
+            get
+            {
+                return host;
+            }
+            set {
+                host = value;
+                    }
+        }
+
         public string AccountCharacter
         {
             get
@@ -372,7 +384,7 @@ namespace GenieClient.Genie
             }
         }
 
-        public void Connect(string sGenieKey, string sAccountName, string sPassword, string sCharacter, string sGame)
+        public void Connect(string sGenieKey, string sAccountName, string sPassword, string sCharacter, string sGame, string sHost, int sPort)
         {
             m_sAccountName = sAccountName;
             m_sAccountPassword = sPassword;
@@ -383,9 +395,7 @@ namespace GenieClient.Genie
 
             m_oGlobals.VariableList["charactername"] = sCharacter;
             m_oGlobals.VariableList["game"] = sGame;
-            string argsHostName = "eaccess.play.net";
-            int argiPort = 7900;
-            DoConnect(argsHostName, argiPort);
+            DoConnect(sHost, sPort);
         }
 
         public void Disconnect()
@@ -477,7 +487,7 @@ namespace GenieClient.Genie
             if (!sText.StartsWith(Conversions.ToString(m_oGlobals.Config.cMyCommandChar))) // Skip user commands
             {
                 m_oLastUserActivity = DateTime.Now;
-                m_oSocket.Send("<c>" + sText + Constants.vbCrLf);
+                m_oSocket.Send(sText + Constants.vbCrLf);
                 m_oGlobals.VariableList["lastcommand"] = sText;
                 var lastCommandVar = "lastcommand";
                 EventVariableChanged?.Invoke(lastCommandVar);
@@ -2962,33 +2972,13 @@ namespace GenieClient.Genie
 
         private void GameSocket_EventConnected()
         {
-            var switchExpr = m_oConnectState;
-            switch (switchExpr)
-            {
-                case ConnectStates.ConnectingKeyServer:
-                    {
-                        m_oSocket.Send("K" + Constants.vbNewLine);
-                        m_oConnectState = ConnectStates.ConnectedKey;
-                        break;
-                    }
-
-                case ConnectStates.ConnectingGameServer:
-                    {
-                        m_oConnectState = ConnectStates.ConnectedGameHandshake;
-                        m_iConnectAttempts = 0;
-                        m_bManualDisconnect = false;
-                        m_oReconnectTime = default;
-                        m_oSocket.Send("<c>" + m_sConnectKey + Constants.vbLf + "<c>/FE:WIZARD /VERSION:1.0.1.22 /P:WIN_UNKNOWN /XML" + Constants.vbLf);    // TEMP
-                                                                                                                                                            // m_oSocket.Send("<c>" & m_sConnectKey & vbLf & "<c>" & m_oGlobals.Config.sConnectString & vbLf)
-                        string argkey = "connected";
-                        string argvalue = "1";
-                        m_oGlobals.VariableList.Add(argkey, argvalue, Globals.Variables.VariableType.Reserved);
-                        string argsVariable = "$connected";
-                        VariableChanged(argsVariable);
-                        m_bStatusPromptEnabled = false;
-                        break;
-                    }
-            }
+            m_oConnectState = ConnectStates.ConnectedGame;                                                                                                    // m_oSocket.Send("<c>" & m_sConnectKey & vbLf & "<c>" & m_oGlobals.Config.sConnectString & vbLf)
+            string argkey = "connected";
+            string argvalue = "1";
+            m_oGlobals.VariableList.Add(argkey, argvalue, Globals.Variables.VariableType.Reserved);
+            string argsVariable = "$connected";
+            VariableChanged(argsVariable);
+            m_bStatusPromptEnabled = false;
         }
 
         private void GameSocket_EventDisconnected()
@@ -3037,7 +3027,7 @@ namespace GenieClient.Genie
 
         private void GameSocket_EventParsePartialRow(string row)
         {
-            if (m_oConnectState == ConnectStates.ConnectedKey | m_oConnectState == ConnectStates.ConnectedGameHandshake)
+            if (m_oConnectState == ConnectStates.ConnectedKey | m_oConnectState == ConnectStates.ConnectedGameHandshake | m_oConnectState == ConnectStates.ConnectedGame)
             {
                 ParseRow(row);
             }
